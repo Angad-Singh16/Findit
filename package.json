@@ -1,0 +1,16 @@
+{
+  "name": "findit",
+  "version": "1.0.0",
+  "description": "backend of Findit",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "jqavascript",
+    "backend",
+    "find"
+  ],
+  "author": "Angad singh",
+  "license": "ISC"
+}
