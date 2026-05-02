@@ -10,13 +10,7 @@ const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
 // ── Socket.IO Setup ───────────────────────────────────────
-const io = new SocketIO(server, {
-  cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
-});
+const io = new SocketIO(server, { cors: { origin: [ 'http://localhost:5173', process.env.CLIENT_URL, ].filter(Boolean), methods: ['GET', 'POST'], credentials: true, }, });
 
 // Make io accessible in controllers via app
 app.set('io', io);
