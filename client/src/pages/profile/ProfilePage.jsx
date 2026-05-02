@@ -8,6 +8,7 @@ import { getMyItemsApi } from '../../api/item.api.js';
 import { formatDate, timeAgo } from '../../utils/formatDate.js';
 import { ITEM_STATUS } from '../../utils/constants.js';
 import { Link } from 'react-router-dom';
+import { FiTrash2 } from 'react-icons/fi';
 
 export default function ProfilePage() {
   const { user, setUser }                     = useAuthStore();
@@ -182,22 +183,55 @@ export default function ProfilePage() {
               <p className="text-slate-400 text-sm">You haven't reported any items yet.</p>
             </div>
           ) : (
-            myItems.map((item) => {
-              const s = ITEM_STATUS[item.status] || ITEM_STATUS.open;
-              return (
-                <Link key={item._id} to={`/items/${item._id}`}
-                  className="flex items-center gap-4 bg-slate-900 border border-slate-800 hover:border-slate-600 rounded-xl p-4 transition-colors">
-                  <div className={`text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0 ${item.type === 'lost' ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
-                    {item.type}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-white truncate">{item.title}</p>
-                    <p className="text-xs text-slate-500">{item.location?.name} · {formatDate(item.createdAt)}</p>
-                  </div>
-                  <span className={`text-xs px-2.5 py-1 rounded-full flex-shrink-0 ${s.color}`}>{s.label}</span>
-                </Link>
-              );
-            })
+myItems.map((item) => {
+  const s = ITEM_STATUS[item.status] || ITEM_STATUS.open;
+  return (
+    <div key={item._id}
+      className="flex items-center gap-4 bg-slate-900 border border-slate-800 hover:border-slate-600 rounded-xl p-4 transition-colors">
+      
+      {/* Type badge */}
+      <div className={`text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0 ${
+        item.type === 'lost'
+          ? 'bg-red-500/20 text-red-400'
+          : 'bg-green-500/20 text-green-400'
+      }`}>
+        {item.type}
+      </div>
+
+      {/* Info — clickable */}
+      <Link to={`/items/${item._id}`} className="flex-1 min-w-0">
+        <p className="font-medium text-white truncate">{item.title}</p>
+        <p className="text-xs text-slate-500">
+          {item.location?.name} · {formatDate(item.createdAt)}
+        </p>
+      </Link>
+
+      {/* Status badge */}
+      <span className={`text-xs px-2.5 py-1 rounded-full flex-shrink-0 ${s.color}`}>
+        {s.label}
+      </span>
+
+      {/* Delete button */}
+      <button
+        onClick={async () => {
+          if (!confirm('Delete this item?')) return;
+          try {
+            const { deleteItemApi } = await import('../../api/item.api.js');
+            await deleteItemApi(item._id);
+            toast.success('Item deleted.');
+            setMyItems((prev) => prev.filter((i) => i._id !== item._id));
+          } catch {
+            toast.error('Failed to delete item.');
+          }
+        }}
+        className="text-slate-500 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-red-500/10 flex-shrink-0"
+        title="Delete item"
+      >
+        <FiTrash2 size={15} />
+      </button>
+    </div>
+  );
+})
           )}
         </div>
       )}

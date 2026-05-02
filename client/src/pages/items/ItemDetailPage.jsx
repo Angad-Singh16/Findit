@@ -8,6 +8,8 @@ import { submitClaimApi } from '../../api/claim.api.js';
 import { ITEM_STATUS } from '../../utils/constants.js';
 import { formatDate } from '../../utils/formatDate.js';
 import { getImageUrl } from '../../utils/formatImage.js';
+import { FiTrash2 } from 'react-icons/fi';
+import { deleteItemApi } from '../../api/item.api.js';
 
 export default function ItemDetailPage() {
   const { id } = useParams();
@@ -18,6 +20,7 @@ export default function ItemDetailPage() {
   const [claimDesc, setClaimDesc] = useState('');
   const [showClaimForm, setShowClaimForm] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchItemById(id);
@@ -53,6 +56,19 @@ export default function ItemDetailPage() {
 
   const status = ITEM_STATUS[item.status] || ITEM_STATUS.open;
   const isOwner = user?._id === item.user_id?._id;
+  const handleDelete = async () => {
+  if (!confirm('Are you sure you want to delete this item? This cannot be undone.')) return;
+  setDeleting(true);
+  try {
+    await deleteItemApi(item._id);
+    toast.success('Item deleted successfully.');
+    navigate('/items');
+  } catch (err) {
+    toast.error(err?.response?.data?.message || 'Failed to delete item.');
+  } finally {
+    setDeleting(false);
+  }
+};
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -186,6 +202,32 @@ export default function ItemDetailPage() {
           )}
         </div>
       )}
+      {/* Delete Section — owner or admin, item is claimed/resolved */}
+{(isOwner || user?.role === 'admin') && (
+  <div className="bg-slate-900 border border-red-500/20 rounded-xl p-5">
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <h3 className="font-semibold text-white text-sm">Delete Item</h3>
+        <p className="text-slate-400 text-xs mt-1">
+          {item.status === 'claimed' || item.status === 'resolved'
+            ? 'This item has been claimed. You can now delete it from the system.'
+            : 'Permanently remove this item from the lost & found system.'}
+        </p>
+      </div>
+      <button
+        onClick={handleDelete}
+        disabled={deleting}
+        className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-semibold px-4 py-2.5 rounded-lg transition-colors disabled:opacity-50 flex-shrink-0 text-sm"
+      >
+        {deleting
+          ? <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+          : <FiTrash2 size={15} />
+        }
+        {deleting ? 'Deleting...' : 'Delete Item'}
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 }
