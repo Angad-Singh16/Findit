@@ -47,8 +47,8 @@ export const createItem = async (req, res, next) => {
 
         // Handle uploaded images
         const image_urls = req.files
-            ? req.files.map((f) => `/uploads/${f.filename}`)
-            : [];
+  ?     req.files.map((f) => f.path)  // f.path is full Cloudinary URL
+        : [];
 
         const item = await Item.create({
             user_id: req.user.id,
@@ -175,7 +175,7 @@ export const updateItem = async (req, res, next) => {
         if (req.files && req.files.length > 0) {
             updates.image_urls = [
                 ...item.image_urls,
-                ...req.files.map((f) => `/uploads/${f.filename}`),
+                ...req.files.map((f) => f.path),
             ];
         }
 

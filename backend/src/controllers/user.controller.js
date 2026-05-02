@@ -25,7 +25,7 @@ export const updateProfile = async (req, res, next) => {
 
         // If a new avatar was uploaded
         if (req.file) {
-            updates.avatar_url = `/uploads/${req.file.filename}`;
+            updates.avatar_url = req.file.path;
         }
 
         // Remove undefined fields
